@@ -1,4 +1,5 @@
 #include <emscripten.h>
+#include <emscripten/bind.h>
 #include <string>
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
@@ -21,35 +22,38 @@ int main(int argc, char const *argv[]) {
     return 0;
 }
 
+void clearContexts() {
+    if (contexts[0]) delete contexts[0];
+    if (contexts[1]) delete contexts[1];
+}
 
-extern "C" {
+void createContext(int width, int height, long id, int index) {
+    char* idc = reinterpret_cast<char*>(id);
+    contexts[index] = new Context(width, height, idc);
+    free(idc);
+}
 
-    EMSCRIPTEN_KEEPALIVE
-    void clearContexts (void) {
-        if (contexts[0]) delete contexts[0];
-        if (contexts[1]) delete contexts[1];
-    }
+void loadTexture (long buf, int bufSize) {
+    printf("[WASM] Loading Texture \n");
+    uint8_t* bufId = reinterpret_cast<uint8_t*>(buf);
+    contexts[0]->run(bufId);
+    free(bufId);
+}
 
-    EMSCRIPTEN_KEEPALIVE
-    void createContext (int width, int height, char * id, int index) {
-        contexts[index] = new Context(width, height, id);
-        free(id);
-    }
+void detectEdges (long buf, int bufSize) {
+    printf("[WASM] Detecting edges \n");
+    uint8_t* bufId = reinterpret_cast<uint8_t*>(buf);
+    contexts[1]->run(bufId);
+    free(bufId);
+}
 
-    EMSCRIPTEN_KEEPALIVE
-    void loadTexture (uint8_t *buf, int bufSize) {
-        printf("[WASM] Loading Texture \n");
+EMSCRIPTEN_BINDINGS(SHADAERS) {
+    using namespace emscripten;
 
-        contexts[0]->run(buf);
-        free(buf);
-    }
-
-    EMSCRIPTEN_KEEPALIVE
-    void detectEdges (uint8_t *buf, int bufSize) {
-        printf("[WASM] Detecting edges \n");
-
-        contexts[1]->run(buf);
-        free(buf);
-    }
+    function("clearContexts", &clearContexts);
+    function("createContext", &createContext, allow_raw_pointers());
+    function("loadTexture", &loadTexture, allow_raw_pointers());
+    function("detectEdges", &detectEdges, allow_raw_pointers());
 
 }
+    
