@@ -2,9 +2,7 @@
 #include <string>
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
-extern "C" {
-    #include "html5.h"
-}
+#include "emscripten/html5.h"
 #include "Context.cpp"
 
 Context* contexts[2];
