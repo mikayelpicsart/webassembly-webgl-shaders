@@ -1,27 +1,14 @@
-"use strict"
+const express = require('express')
+const app = express()
+const port = 3000
 
-const http = require("http")
-const fs = require("fs")
-const url = require("url")
+app.use(express.static(__dirname, { setHeaders: (res, path) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+    res.setHeader('Cross-Origin-Recurse-Policy', 'same-origin');
+} }));
 
-http.createServer((request, response) => {
-
-    let path = url.parse(request.url).pathname
-    let data
-
-    path = (path=="/"?"/index.html":path)
-
-    console.log(path)
-
-    if (path=="/appWASM.wasm") {
-        path = "/dist"+path
-    }
-
-    try{
-        data = fs.readFileSync(__dirname+path)
-    }catch(e){}
-
-    response.end(data)
-
-}).listen(1337, () => console.log("Server listening on port 1337"))
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
 
