@@ -53,16 +53,29 @@
         convert.addEventListener("click", () => {
 
             // Get imageData from the image
-            const imageData = previewCanvasContext.getImageData(0, 0, previewCanvas.width, previewCanvas.height).data;
+            // const imageData = previewCanvasContext.getImageData(0, 0, previewCanvas.width, previewCanvas.height).data;
 
-            // Pass the imageData to the C++ code
-            let bufferArray = new Uint8Array(imageData);
-            const numBytes = bufferArray.length * bufferArray.BYTES_PER_ELEMENT;
-            const dataPtr = Module._malloc(numBytes);
-            const dataOnHeap = Module.HEAPU8.subarray(dataPtr, dataPtr + numBytes);
-            dataOnHeap.set(bufferArray);
-            Module.loadTexture(dataPtr, numBytes);
-            Module.detectEdges(dataPtr, numBytes);
+            // // Pass the imageData to the C++ code
+            // let bufferArray = new Uint8Array(imageData);
+            // const numBytes = bufferArray.length * bufferArray.BYTES_PER_ELEMENT;
+            // const dataPtr = Module._malloc(numBytes);
+            // const dataOnHeap = Module.HEAPU8.subarray(dataPtr, dataPtr + numBytes);
+            // dataOnHeap.set(bufferArray);
+            // Module.loadTexture(dataPtr, numBytes);
+            // Module.detectEdges(dataPtr, numBytes);
+
+            const canvas = document.createElement("canvas");
+            canvas.id = "myCanvas";
+            canvas.height = 600;
+            canvas.width = 600;
+            canvasContainer.innerHTML = "";
+            canvasContainer.appendChild(canvas);
+
+            const imageData = previewCanvasContext.getImageData(0, 0, 100, 100).data;
+            let myCanvas = document.getElementById("myCanvas");
+            let offscreen = myCanvas.transferControlToOffscreen();
+            let worker = new Worker("worker.js");
+            worker.postMessage({canvas: offscreen, imageData: imageData.buffer}, [offscreen, imageData.buffer]);
         })
     })
     </script>
